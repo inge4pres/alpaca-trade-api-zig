@@ -1,7 +1,7 @@
 pub const types = @import("types.zig");
 pub const client = @import("client.zig");
 
-pub const AlpacaClient = client.AlpacaClient;
+pub const AlpacaClient = client.TradingWebSocketClient;
 pub const AlpacaMessage = types.AlpacaMessage;
 pub const AlpacaTrade = types.AlpacaTrade;
 pub const AlpacaQuote = types.AlpacaQuote;

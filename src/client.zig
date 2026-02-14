@@ -4,12 +4,14 @@ const types = @import("types.zig");
 
 const log = std.log.scoped(.alpaca_client);
 
-pub const AlpacaClient = struct {
+/// A Websocket impementation for connecting to Alpaca's streaming API.
+/// It allows authenticating, subscribing to channels, and reading messages.
+pub const TradingWebSocketClient = struct {
     allocator: std.mem.Allocator,
     client: websocket.Client,
     state: types.ConnectionState,
 
-    pub fn init(allocator: std.mem.Allocator) AlpacaClient {
+    pub fn init(allocator: std.mem.Allocator) TradingWebSocketClient {
         return .{
             .allocator = allocator,
             .client = undefined,
@@ -17,14 +19,14 @@ pub const AlpacaClient = struct {
         };
     }
 
-    pub fn deinit(self: *AlpacaClient) void {
+    pub fn deinit(self: *TradingWebSocketClient) void {
         if (self.state != .disconnected) {
             self.client.close(.{}) catch {};
         }
     }
 
     /// Connect to WebSocket URL
-    pub fn connect(self: *AlpacaClient, url: []const u8) !void {
+    pub fn connect(self: *TradingWebSocketClient, url: []const u8) !void {
         self.state = .connecting;
 
         // Parse URL to extract host and path
@@ -62,7 +64,7 @@ pub const AlpacaClient = struct {
 
     /// Authenticate with Alpaca API
     /// CRITICAL: Must be called within 10 seconds of connecting
-    pub fn authenticate(self: *AlpacaClient, api_key: []const u8, api_secret: []const u8) !void {
+    pub fn authenticate(self: *TradingWebSocketClient, api_key: []const u8, api_secret: []const u8) !void {
         if (self.state != .connected) {
             return error.NotConnected;
         }
@@ -104,7 +106,7 @@ pub const AlpacaClient = struct {
     }
 
     /// Subscribe to channels and symbols
-    pub fn subscribe(self: *AlpacaClient, channels: [][]const u8, symbols: [][]const u8) !void {
+    pub fn subscribe(self: *TradingWebSocketClient, channels: [][]const u8, symbols: [][]const u8) !void {
         if (self.state != .authenticated) {
             return error.NotAuthenticated;
         }
@@ -160,7 +162,7 @@ pub const AlpacaClient = struct {
 
     /// Read next message from WebSocket (blocking)
     /// Handles ping/pong automatically and only returns text messages
-    pub fn readMessage(self: *AlpacaClient) !?[]u8 {
+    pub fn readMessage(self: *TradingWebSocketClient) !?[]u8 {
         while (true) {
             const msg = self.client.read() catch |err| {
                 switch (err) {
@@ -213,73 +215,73 @@ pub const AlpacaClient = struct {
     }
 
     /// Check if connection is active
-    pub fn isConnected(self: *const AlpacaClient) bool {
+    pub fn isConnected(self: *const TradingWebSocketClient) bool {
         return self.state == .subscribed or self.state == .authenticated;
     }
 };
 
 test "init sets disconnected state" {
-    const client = AlpacaClient.init(std.testing.allocator);
+    const client = TradingWebSocketClient.init(std.testing.allocator);
     try std.testing.expectEqual(types.ConnectionState.disconnected, client.state);
 }
 
 test "isConnected returns false when disconnected" {
-    const client = AlpacaClient.init(std.testing.allocator);
+    const client = TradingWebSocketClient.init(std.testing.allocator);
     try std.testing.expect(!client.isConnected());
 }
 
 test "isConnected returns false when connecting" {
-    var client = AlpacaClient.init(std.testing.allocator);
+    var client = TradingWebSocketClient.init(std.testing.allocator);
     client.state = .connecting;
     try std.testing.expect(!client.isConnected());
 }
 
 test "isConnected returns false when authenticating" {
-    var client = AlpacaClient.init(std.testing.allocator);
+    var client = TradingWebSocketClient.init(std.testing.allocator);
     client.state = .authenticating;
     try std.testing.expect(!client.isConnected());
 }
 
 test "isConnected returns true when authenticated" {
-    var client = AlpacaClient.init(std.testing.allocator);
+    var client = TradingWebSocketClient.init(std.testing.allocator);
     client.state = .authenticated;
     try std.testing.expect(client.isConnected());
 }
 
 test "isConnected returns true when subscribed" {
-    var client = AlpacaClient.init(std.testing.allocator);
+    var client = TradingWebSocketClient.init(std.testing.allocator);
     client.state = .subscribed;
     try std.testing.expect(client.isConnected());
 }
 
 test "isConnected returns false on error_state" {
-    var client = AlpacaClient.init(std.testing.allocator);
+    var client = TradingWebSocketClient.init(std.testing.allocator);
     client.state = .error_state;
     try std.testing.expect(!client.isConnected());
 }
 
 test "authenticate returns NotConnected when disconnected" {
-    var client = AlpacaClient.init(std.testing.allocator);
+    var client = TradingWebSocketClient.init(std.testing.allocator);
     try std.testing.expectError(error.NotConnected, client.authenticate("key", "secret"));
     // state must not change
     try std.testing.expectEqual(types.ConnectionState.disconnected, client.state);
 }
 
 test "authenticate returns NotConnected when already authenticating" {
-    var client = AlpacaClient.init(std.testing.allocator);
+    var client = TradingWebSocketClient.init(std.testing.allocator);
     client.state = .authenticating;
     try std.testing.expectError(error.NotConnected, client.authenticate("key", "secret"));
 }
 
 test "subscribe returns NotAuthenticated when disconnected" {
-    var client = AlpacaClient.init(std.testing.allocator);
+    var client = TradingWebSocketClient.init(std.testing.allocator);
     var channels = [_][]const u8{"trades"};
     var symbols = [_][]const u8{"AAPL"};
     try std.testing.expectError(error.NotAuthenticated, client.subscribe(&channels, &symbols));
 }
 
 test "subscribe returns NotAuthenticated when only connected" {
-    var client = AlpacaClient.init(std.testing.allocator);
+    var client = TradingWebSocketClient.init(std.testing.allocator);
     client.state = .connected;
     var channels = [_][]const u8{"trades"};
     var symbols = [_][]const u8{"AAPL"};
