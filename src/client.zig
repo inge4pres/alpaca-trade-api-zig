@@ -23,6 +23,7 @@ pub const TradingWebSocketClient = struct {
         if (self.state != .disconnected) {
             self.client.close(.{}) catch {};
         }
+        self.client.deinit();
     }
 
     /// Connect to WebSocket URL
