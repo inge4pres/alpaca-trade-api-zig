@@ -1,0 +1,13 @@
+.{
+    .name = .alpaca_trade_api_zig,
+    .version = "0.1.0",
+    .dependencies = .{
+        .websocket = .{
+            .url = "https://github.com/karlseguin/websocket.zig/archive/refs/heads/master.tar.gz",
+            .hash = "websocket-0.1.0-ZPISdRlzAwBB_Bz2UMMqxYqF6YEVTIBoFsbzwPUJTHIc",
+        },
+    },
+    .minimum_zig_version = "0.15.2",
+    .paths = .{ "src", "build.zig", "build.zig.zon", "README.md", "LICENSE" },
+    .fingerprint = 0x17b3425c62d1287e,
+}
