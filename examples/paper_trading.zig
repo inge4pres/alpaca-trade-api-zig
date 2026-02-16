@@ -67,7 +67,7 @@ pub fn main() !void {
     // -------------------------------------------------------------------------
     // 2. Orders — place a paper market buy
     // -------------------------------------------------------------------------
-    var orders = alpaca.OrderClient.init(allocator, api_key, api_secret);
+    var orders = alpaca.OrderClient.init(allocator, .paper, api_key, api_secret);
     defer orders.deinit();
 
     std.debug.print("Placing paper market buy for 1 share of {s}...\n", .{order_symbol});

@@ -78,6 +78,18 @@ pub const OrderRequest = struct {
     }
 };
 
+pub const TradingAPIURL = union(enum) {
+    paper: []const u8,
+    live: []const u8,
+
+    pub fn getURL(self: TradingAPIURL) []const u8 {
+        return switch (self) {
+            .paper => "https://paper-api.alpaca.markets",
+            .live => "https://api.alpaca.markets",
+        };
+    }
+};
+
 /// HTTP client for submitting and managing orders via the Alpaca Trading REST API.
 /// Targets paper-api.alpaca.markets by default.
 pub const OrderClient = struct {
@@ -87,12 +99,12 @@ pub const OrderClient = struct {
     base_url: []const u8,
     client: std.http.Client,
 
-    pub fn init(allocator: std.mem.Allocator, api_key: []const u8, api_secret: []const u8) OrderClient {
+    pub fn init(allocator: std.mem.Allocator, url: TradingAPIURL, api_key: []const u8, api_secret: []const u8) OrderClient {
         return .{
             .allocator = allocator,
             .api_key = api_key,
             .api_secret = api_secret,
-            .base_url = "https://paper-api.alpaca.markets",
+            .base_url = url.getURL(),
             .client = .{ .allocator = allocator },
         };
     }
