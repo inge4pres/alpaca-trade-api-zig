@@ -68,7 +68,7 @@ pub fn main() !void {
         const bar_array = entry.value_ptr.*.array.items;
         std.debug.print("{s}: {} bar(s)\n", .{ sym, bar_array.len });
         for (bar_array) |bar_val| {
-            const bar = try std.json.parseFromValue(alpaca.Bar, allocator, bar_val, .{});
+            const bar = try std.json.parseFromValue(alpaca.Bar, allocator, bar_val, .{ .ignore_unknown_fields = true });
             defer bar.deinit();
             std.debug.print("  {s}  o={d:.2}  h={d:.2}  l={d:.2}  c={d:.2}  v={d}\n", .{
                 bar.value.t,
@@ -110,7 +110,7 @@ pub fn main() !void {
         const trade_array = entry.value_ptr.*.array.items;
         std.debug.print("{s}: {} trade(s)\n", .{ sym, trade_array.len });
         for (trade_array) |trade_val| {
-            const trade = try std.json.parseFromValue(alpaca.HistoricalTrade, allocator, trade_val, .{});
+            const trade = try std.json.parseFromValue(alpaca.HistoricalTrade, allocator, trade_val, .{ .ignore_unknown_fields = true });
             defer trade.deinit();
             std.debug.print("  {s}  price={d:.2}  size={d}\n", .{
                 trade.value.t,
@@ -149,7 +149,7 @@ pub fn main() !void {
         const quote_array = entry.value_ptr.*.array.items;
         std.debug.print("{s}: {} quote(s)\n", .{ sym, quote_array.len });
         for (quote_array) |quote_val| {
-            const quote = try std.json.parseFromValue(alpaca.HistoricalQuote, allocator, quote_val, .{});
+            const quote = try std.json.parseFromValue(alpaca.HistoricalQuote, allocator, quote_val, .{ .ignore_unknown_fields = true });
             defer quote.deinit();
             std.debug.print("  {s}  bid={d:.2}x{d}  ask={d:.2}x{d}\n", .{
                 quote.value.t,
@@ -181,7 +181,6 @@ pub fn main() !void {
         .start = "2024-01-02",
         .end = "2024-01-05",
         .limit = 10,
-        .feed = .indicative,
     });
     defer allocator.free(opt_bars_json);
 
@@ -199,7 +198,7 @@ pub fn main() !void {
         const bar_array = entry.value_ptr.*.array.items;
         std.debug.print("{s}: {} bar(s)\n", .{ sym, bar_array.len });
         for (bar_array) |bar_val| {
-            const bar = try std.json.parseFromValue(alpaca.Bar, allocator, bar_val, .{});
+            const bar = try std.json.parseFromValue(alpaca.Bar, allocator, bar_val, .{ .ignore_unknown_fields = true });
             defer bar.deinit();
             std.debug.print("  {s}  o={d:.2}  h={d:.2}  l={d:.2}  c={d:.2}  v={d}\n", .{
                 bar.value.t,

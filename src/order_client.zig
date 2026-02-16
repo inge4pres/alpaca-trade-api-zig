@@ -78,9 +78,9 @@ pub const OrderRequest = struct {
     }
 };
 
-pub const TradingAPIURL = union(enum) {
-    paper: []const u8,
-    live: []const u8,
+pub const TradingAPIURL = enum {
+    paper,
+    live,
 
     pub fn getURL(self: TradingAPIURL) []const u8 {
         return switch (self) {

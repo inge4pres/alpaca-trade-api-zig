@@ -145,7 +145,6 @@ pub const OptionBarsParams = struct {
     limit: ?u32 = null,
     page_token: ?[]const u8 = null,
     sort: ?Sort = null,
-    feed: ?OptionFeed = null,
 };
 
 pub const OptionTradesParams = struct {
@@ -155,7 +154,6 @@ pub const OptionTradesParams = struct {
     limit: ?u32 = null,
     page_token: ?[]const u8 = null,
     sort: ?Sort = null,
-    feed: ?OptionFeed = null,
 };
 
 pub const OptionQuotesParams = struct {
@@ -165,7 +163,6 @@ pub const OptionQuotesParams = struct {
     limit: ?u32 = null,
     page_token: ?[]const u8 = null,
     sort: ?Sort = null,
-    feed: ?OptionFeed = null,
 };
 
 // ---------------------------------------------------------------------------
@@ -410,7 +407,6 @@ pub const HistoricalOptionClient = struct {
         try appendSymbols(&buf, self.allocator, &first, params.symbols);
         try appendParam(&buf, self.allocator, &first, "timeframe", params.timeframe.toString());
         try appendOptionalParams(&buf, self.allocator, &first, params.start, params.end, params.limit, params.page_token, params.sort);
-        if (params.feed) |f| try appendParam(&buf, self.allocator, &first, "feed", @tagName(f));
 
         const url = try buf.toOwnedSlice(self.allocator);
         defer self.allocator.free(url);
@@ -427,7 +423,6 @@ pub const HistoricalOptionClient = struct {
         var first = true;
         try appendSymbols(&buf, self.allocator, &first, params.symbols);
         try appendOptionalParams(&buf, self.allocator, &first, params.start, params.end, params.limit, params.page_token, params.sort);
-        if (params.feed) |f| try appendParam(&buf, self.allocator, &first, "feed", @tagName(f));
 
         const url = try buf.toOwnedSlice(self.allocator);
         defer self.allocator.free(url);
@@ -444,7 +439,6 @@ pub const HistoricalOptionClient = struct {
         var first = true;
         try appendSymbols(&buf, self.allocator, &first, params.symbols);
         try appendOptionalParams(&buf, self.allocator, &first, params.start, params.end, params.limit, params.page_token, params.sort);
-        if (params.feed) |f| try appendParam(&buf, self.allocator, &first, "feed", @tagName(f));
 
         const url = try buf.toOwnedSlice(self.allocator);
         defer self.allocator.free(url);

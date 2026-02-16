@@ -31,7 +31,6 @@ pub const HistoricalQuote = historical_client.HistoricalQuote;
 pub const Timeframe = historical_client.Timeframe;
 pub const Adjustment = historical_client.Adjustment;
 pub const StockFeed = historical_client.StockFeed;
-pub const OptionFeed = historical_client.OptionFeed;
 pub const Sort = historical_client.Sort;
 
 // Historical data request parameter types

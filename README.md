@@ -47,7 +47,7 @@ Supports `feed` (iex / sip / boats / overnight), `adjustment` (raw / split / div
 | `getTrades` | `GET /v1beta1/options/trades` | Trade ticks for one or more OCC contract symbols |
 | `getQuotes` | `GET /v1beta1/options/quotes` | Quote ticks for one or more OCC contract symbols |
 
-Supports `feed` (indicative — free, 15 min delayed / opra — subscription required).
+The options endpoints do not accept a `feed` query parameter; data access is controlled by your Alpaca subscription.
 
 ## Adding as a dependency
 
@@ -182,7 +182,6 @@ const bars_json = try options.getBars(.{
     .timeframe = .@"1Day",
     .start     = "2024-01-02",
     .end       = "2024-01-05",
-    .feed      = .indicative, // free; use .opra with a subscription
 });
 defer allocator.free(bars_json);
 ```
