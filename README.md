@@ -97,6 +97,28 @@ while (feed.isConnected()) {
 }
 ```
 
+#### Thread-safety and shutdown
+
+`AlpacaClient` is **not thread-safe**. When `readMessage()` runs on a
+dedicated thread, calling `deinit()` from another thread concurrently will
+free the internal read buffer while the reader is still using it, triggering
+an assertion failure (`assert(self.buf.data.len > pos)`) in the websocket
+library.
+
+Use the following shutdown sequence instead:
+
+```zig
+// 1. Signal the reader thread to stop by closing the socket.
+//    readMessage() will unblock and return null.
+feed.close();
+
+// 2. Join the reader thread (wait for it to exit readMessage).
+reader_thread.join();
+
+// 3. Now safe to free resources.
+feed.deinit();
+```
+
 ### Placing an order
 
 ```zig

@@ -4,8 +4,25 @@ const types = @import("types.zig");
 
 const log = std.log.scoped(.alpaca_client);
 
-/// A Websocket impementation for connecting to Alpaca's streaming API.
+/// A WebSocket client for connecting to Alpaca's streaming API.
 /// It allows authenticating, subscribing to channels, and reading messages.
+///
+/// Thread-safety: this client is NOT thread-safe. When readMessage() is
+/// running on a dedicated thread, use the following shutdown sequence to
+/// avoid a data race between deinit() freeing the read buffer and fill()
+/// still writing into it:
+///
+///   1. Call client.close() from the main thread.
+///      This sends a WebSocket close frame and shuts down the underlying
+///      TCP socket, which causes the blocking readMessage() call to return
+///      null (or an error) on the reader thread.
+///   2. Join (wait for) the reader thread to exit.
+///   3. Call client.deinit() — now safe because no other thread is using
+///      the client.
+///
+/// Calling deinit() while readMessage() is blocked in another thread will
+/// free the internal read buffer mid-read and trigger an assert in the
+/// websocket library (proto.zig: assert(self.buf.data.len > pos)).
 pub const TradingWebSocketClient = struct {
     allocator: std.mem.Allocator,
     client: websocket.Client,
@@ -19,10 +36,26 @@ pub const TradingWebSocketClient = struct {
         };
     }
 
+    /// Send a WebSocket close frame and shut down the underlying socket.
+    ///
+    /// After close() returns, any concurrent readMessage() call will
+    /// unblock and return null. This is the correct first step of the
+    /// threaded shutdown sequence described on TradingWebSocketClient.
+    ///
+    /// close() is idempotent: calling it more than once is safe.
+    pub fn close(self: *TradingWebSocketClient) void {
+        if (self.state == .disconnected) return;
+        self.client.close(.{}) catch {};
+        self.state = .disconnected;
+    }
+
+    /// Free all resources held by this client.
+    ///
+    /// WARNING: do NOT call deinit() while readMessage() is running on
+    /// another thread. Call close() first, join the reader thread, then
+    /// call deinit(). See the struct-level doc comment for details.
     pub fn deinit(self: *TradingWebSocketClient) void {
-        if (self.state != .disconnected) {
-            self.client.close(.{}) catch {};
-        }
+        self.close();
         self.client.deinit();
     }
 
