@@ -213,33 +213,39 @@ pub const TradingWebSocketClient = struct {
             };
 
             if (msg) |m| {
-                // Handle different message types
+                // Handle different message types.
+                // IMPORTANT: client.done(m) must be called for every message
+                // returned by client.read(), in every branch. It signals to the
+                // websocket library that we are finished with m.data, allowing it
+                // to release any large dynamic buffer and restore the static read
+                // buffer. Omitting done() causes the dynamic buffer to be retained
+                // indefinitely; once its space is exhausted fill() asserts
+                // (data.len > pos fails) and the process panics.
                 switch (m.type) {
                     .text => {
-                        // Return owned copy of text data
-                        return try self.allocator.dupe(u8, m.data);
+                        // Copy data before done() invalidates the buffer slice.
+                        const copy = try self.allocator.dupe(u8, m.data);
+                        self.client.done(m);
+                        return copy;
                     },
                     .ping => {
-                        // Respond to ping with pong to keep connection alive
                         log.debug("Received ping, responding with pong", .{});
                         try self.client.writePong(@constCast(m.data));
-                        // Continue loop to read next message
+                        self.client.done(m);
                     },
                     .pong => {
-                        // Server responded to our ping (not used currently)
                         log.debug("Received pong from server", .{});
-                        // Continue loop to read next message
+                        self.client.done(m);
                     },
                     .close => {
-                        // Server closed connection gracefully
                         log.warn("Server sent close frame", .{});
+                        self.client.done(m);
                         self.state = .disconnected;
                         return null;
                     },
                     .binary => {
-                        // Alpaca doesn't use binary frames, but handle it just in case
                         log.warn("Received unexpected binary frame", .{});
-                        // Continue loop to read next message
+                        self.client.done(m);
                     },
                 }
             } else {
