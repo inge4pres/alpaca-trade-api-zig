@@ -3,8 +3,8 @@
     .version = "0.1.0",
     .dependencies = .{
         .websocket = .{
-            .url = "https://github.com/karlseguin/websocket.zig/archive/refs/heads/master.tar.gz",
-            .hash = "websocket-0.1.0-ZPISdRlzAwBB_Bz2UMMqxYqF6YEVTIBoFsbzwPUJTHIc",
+            .url = "git+https://github.com/karlseguin/websocket.zig?ref=zig-0.15#879e3dacaeae30d41430cb670927404d3709657d",
+            .hash = "websocket-0.1.0-ZPISdZ5zAwAxaBRyVbgXaSzk6AOb30ZHmRJI1lY-0b-C",
         },
     },
     .minimum_zig_version = "0.15.2",
